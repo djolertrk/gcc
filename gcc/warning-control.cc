@@ -89,6 +89,9 @@ get_nowarn_spec (const_tree expr)
 {
   const location_t loc = get_location (expr);
 
+  if (IS_ADHOC_LOC (loc))
+    return NULL;
+
   if (RESERVED_LOCATION_P (loc))
     return NULL;
 

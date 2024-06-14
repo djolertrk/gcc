@@ -4747,6 +4747,16 @@ reset_debug_bindings (copy_body_data *id, gimple_stmt_iterator gsi)
   gsi_insert_seq_before_without_update (&gsi, bindings, GSI_SAME_STMT);
 }
 
+static inline location_t
+get_location (const_tree expr)
+{
+  if (DECL_P (expr))
+    return DECL_SOURCE_LOCATION (expr);
+  if (EXPR_P (expr))
+    return EXPR_LOCATION (expr);
+  return UNKNOWN_LOCATION;
+}
+
 /* If STMT is a GIMPLE_CALL, replace it with its inline expansion.  */
 
 static bool
@@ -5069,7 +5079,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	 initialized.  We do not want to issue a warning about that
 	 uninitialized variable.  */
       if (DECL_P (modify_dest))
-	suppress_warning (modify_dest, OPT_Wuninitialized);
+  {
+    location_t locus = get_location (modify_dest);
+    if (not IS_ADHOC_LOC(locus))
+      suppress_warning (modify_dest, OPT_Wuninitialized);
+  }
 
       if (gimple_call_return_slot_opt_p (call_stmt))
 	{
